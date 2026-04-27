@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Canvas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Empty-state overlay with pulsing dot and invitation text -->
+    <div id="empty-state" class="empty-state">
+        <div class="empty-state-content">
+            <div class="pulsing-dot"></div>
+            <p class="empty-state-text">Click anywhere to start a conversation</p>
+            <p class="empty-state-subtext">Describe what you want to see, and watch it come to life</p>
+        </div>
+    </div>
+
+    <!-- Conversation history side panel -->
+    <div id="conversation-panel" class="conversation-panel">
+        <div class="conversation-header">
+            <h2>Conversation History</h2>
+            <button id="clear-history" class="clear-history-btn" title="Clear all">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 4h12M5.5 4V3a1 1 0 011-1h3a1 1 0 011 1v1m2 0v9a2 2 0 01-2 2h-5a2 2 0 01-2-2V4h9z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        <div id="conversation-list" class="conversation-list">
+            <!-- Conversation items will be inserted here -->
+        </div>
+    </div>
+
+    <!-- Main canvas viewport container -->
+    <div id="canvas-viewport" class="canvas-viewport">
+        <div id="canvas-container" class="canvas-container">
+            <!-- Text inputs and LLM-generated objects will be placed here -->
+        </div>
+    </div>
+
+    <!-- Pan/zoom controls in bottom-right -->
+    <div class="canvas-controls">
+        <button id="zoom-in" class="control-btn" title="Zoom In">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+        <button id="zoom-out" class="control-btn" title="Zoom Out">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+        <button id="reset-view" class="control-btn" title="Reset View">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M4 10a6 6 0 1112 0 6 6 0 01-12 0z" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="10" cy="10" r="2" fill="currentColor"/>
+            </svg>
+        </button>
+        <div class="zoom-level" id="zoom-level">100%</div>
+    </div>
+
+    <!-- Hidden text-input template -->
+    <template id="text-input-template">
+        <div class="text-input-bubble">
+            <textarea 
+                class="text-input-field" 
+                placeholder="Type your message..." 
+                rows="1"
+            ></textarea>
+            <button class="ask-llm-btn">Ask LLM</button>
+        </div>
+    </template>
+
+    <!-- Hidden animated object template -->
+    <template id="animated-object-template">
+        <div class="animated-object">
+            <div class="object-content"></div>
+            <div class="object-label"></div>
+        </div>
+    </template>
+
+    <script src="app.js" defer></script>
+</body>
+</html>
