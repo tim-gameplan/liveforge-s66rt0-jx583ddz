@@ -1,0 +1,702 @@
+/* ===========================
+   1. CSS custom properties and theme tokens
+   =========================== */
+
+:root {
+  /* Colors */
+  --color-canvas: #1a1a1d;
+  --color-text: #f5f5f7;
+  --color-accent: #00d9ff;
+  --color-shadow: rgba(0, 0, 0, 0.2);
+  --color-overlay: rgba(255, 255, 255, 0.1);
+  --color-border: rgba(245, 245, 247, 0.1);
+  --color-hover: rgba(0, 217, 255, 0.1);
+  
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-weight-normal: 400;
+  --font-weight-medium: 600;
+  --line-height: 1.6;
+  
+  /* Spacing */
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  
+  /* Timing */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 400ms;
+  --duration-pulse: 2s;
+  
+  /* Shadows */
+  --shadow-object: 0 8px 16px var(--color-shadow);
+  --shadow-panel: 0 4px 12px var(--color-shadow);
+  
+  /* Z-index layers */
+  --z-canvas: 1;
+  --z-controls: 100;
+  --z-panel: 200;
+  --z-empty-state: 300;
+  --z-context-menu: 400;
+}
+
+/* ===========================
+   2. Reset, base styles, and typography scale
+   =========================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height);
+  color: var(--color-text);
+  background: var(--color-canvas);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-weight-medium);
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 1.25rem;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+svg {
+  display: block;
+}
+
+/* ===========================
+   3. Canvas viewport and infinite-scroll transform layer
+   =========================== */
+
+.canvas-viewport {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: var(--z-canvas);
+  cursor: grab;
+  user-select: none;
+}
+
+.canvas-viewport.grabbing {
+  cursor: grabbing;
+}
+
+.canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+/* ===========================
+   4. Empty-state pulsing dot keyframes and invitation text
+   =========================== */
+
+.empty-state {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-empty-state);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity var(--duration-slow) ease-out;
+}
+
+.empty-state.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.empty-state-content {
+  text-align: center;
+}
+
+.pulsing-dot {
+  width: 16px;
+  height: 16px;
+  margin: 0 auto var(--space-lg);
+  background: var(--color-accent);
+  border-radius: 50%;
+  animation: pulse var(--duration-pulse) ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.empty-state-text {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--space-sm);
+  color: var(--color-text);
+}
+
+.empty-state-subtext {
+  font-size: 1rem;
+  color: rgba(245, 245, 247, 0.6);
+}
+
+/* ===========================
+   5. Text input bubble and LLM response card components
+   =========================== */
+
+.text-input-bubble {
+  position: absolute;
+  min-width: 320px;
+  max-width: 480px;
+  background: rgba(26, 26, 29, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--space-md);
+  box-shadow: var(--shadow-object);
+  transition: transform var(--duration-base) ease-out;
+  z-index: 10;
+}
+
+.text-input-bubble:hover {
+  transform: scale(1.02);
+}
+
+.text-input-bubble.dragging {
+  cursor: grabbing;
+  transform: scale(1.05);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+.text-input-field {
+  width: 100%;
+  min-height: 60px;
+  max-height: 200px;
+  padding: var(--space-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  font-weight: var(--font-weight-normal);
+  resize: vertical;
+  margin-bottom: var(--space-md);
+  transition: border-color var(--duration-base) ease;
+}
+
+.text-input-field:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  caret-color: var(--color-accent);
+}
+
+.text-input-field::placeholder {
+  color: rgba(245, 245, 247, 0.4);
+}
+
+.ask-llm-btn {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-accent);
+  color: var(--color-canvas);
+  font-weight: var(--font-weight-medium);
+  border-radius: 8px;
+  transition: all var(--duration-base) ease;
+}
+
+.ask-llm-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+}
+
+.ask-llm-btn:active {
+  transform: scale(0.98);
+}
+
+.ask-llm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: scale(1);
+}
+
+.llm-response-card {
+  position: absolute;
+  min-width: 320px;
+  max-width: 480px;
+  background: rgba(26, 26, 29, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--space-md);
+  box-shadow: var(--shadow-object);
+  z-index: 10;
+  animation: fadeIn var(--duration-slow) ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.llm-response-card.dragging {
+  cursor: grabbing;
+  transform: scale(1.05);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+.llm-response-content {
+  font-size: 0.95rem;
+  line-height: var(--line-height);
+  color: rgba(245, 245, 247, 0.9);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ===========================
+   6. Animated element container and selection outline
+   =========================== */
+
+.animated-object {
+  position: absolute;
+  min-width: 80px;
+  min-height: 80px;
+  cursor: move;
+  transition: transform var(--duration-fast) ease-out;
+  animation: objectEnter var(--duration-slow) cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 5;
+}
+
+@keyframes objectEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animated-object.selected {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.animated-object.dragging {
+  cursor: grabbing;
+  transform: scale(1.05);
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.3));
+  transition: none;
+}
+
+.object-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(var(--shadow-object));
+}
+
+.object-label {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: rgba(26, 26, 29, 0.9);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--duration-base) ease;
+  pointer-events: none;
+}
+
+.animated-object:hover .object-label,
+.animated-object.selected .object-label {
+  opacity: 1;
+}
+
+/* Default shapes for animated objects */
+.animated-object .circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.animated-object .square {
+  width: 80px;
+  height: 80px;
+  background: var(--color-accent);
+  border-radius: 4px;
+}
+
+.animated-object .triangle {
+  width: 0;
+  height: 0;
+  border-left: 40px solid transparent;
+  border-right: 40px solid transparent;
+  border-bottom: 70px solid var(--color-accent);
+}
+
+/* ===========================
+   7. Conversation history side panel
+   =========================== */
+
+.conversation-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 320px;
+  height: 100%;
+  background: rgba(26, 26, 29, 0.95);
+  backdrop-filter: blur(12px);
+  border-left: 1px solid var(--color-border);
+  box-shadow: var(--shadow-panel);
+  z-index: var(--z-panel);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform var(--duration-slow) cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.conversation-panel.visible {
+  transform: translateX(0);
+}
+
+.conversation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.conversation-header h2 {
+  font-size: 1.125rem;
+}
+
+.clear-history-btn {
+  padding: var(--space-xs);
+  color: rgba(245, 245, 247, 0.6);
+  transition: all var(--duration-base) ease;
+  border-radius: 4px;
+}
+
+.clear-history-btn:hover {
+  color: var(--color-accent);
+  background: var(--color-hover);
+}
+
+.conversation-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-md);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 217, 255, 0.3) transparent;
+}
+
+.conversation-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.conversation-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.conversation-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 217, 255, 0.3);
+  border-radius: 3px;
+}
+
+.conversation-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 217, 255, 0.5);
+}
+
+.conversation-item {
+  padding: var(--space-md);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  margin-bottom: var(--space-md);
+  cursor: pointer;
+  transition: all var(--duration-base) ease;
+}
+
+.conversation-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--color-accent);
+  transform: translateX(-4px);
+}
+
+.conversation-item-user {
+  font-size: 0.875rem;
+  color: var(--color-text);
+  margin-bottom: var(--space-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.conversation-item-llm {
+  font-size: 0.8125rem;
+  color: rgba(245, 245, 247, 0.7);
+  line-height: var(--line-height);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.conversation-item-timestamp {
+  font-size: 0.75rem;
+  color: rgba(245, 245, 247, 0.4);
+  margin-top: var(--space-xs);
+}
+
+/* ===========================
+   8. Context menu and object action overlays
+   =========================== */
+
+.canvas-controls {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  background: rgba(26, 26, 29, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-accent);
+  border-radius: 12px;
+  padding: var(--space-sm);
+  box-shadow: var(--shadow-panel);
+  z-index: var(--z-controls);
+}
+
+.control-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: var(--color-text);
+  transition: all var(--duration-base) ease;
+}
+
+.control-btn:hover {
+  background: var(--color-hover);
+  color: var(--color-accent);
+  transform: scale(1.1);
+}
+
+.control-btn:active {
+  transform: scale(0.95);
+}
+
+.zoom-level {
+  min-width: 48px;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-accent);
+  padding: 0 var(--space-xs);
+}
+
+.context-menu {
+  position: fixed;
+  background: rgba(26, 26, 29, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: var(--space-xs);
+  box-shadow: var(--shadow-panel);
+  z-index: var(--z-context-menu);
+  min-width: 160px;
+  animation: fadeIn var(--duration-base) ease-out;
+}
+
+.context-menu-item {
+  display: block;
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  text-align: left;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  transition: all var(--duration-base) ease;
+  color: var(--color-text);
+}
+
+.context-menu-item:hover {
+  background: var(--color-hover);
+  color: var(--color-accent);
+}
+
+.context-menu-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-xs) 0;
+}
+
+/* Panel toggle button */
+.panel-toggle {
+  position: fixed;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  width: 48px;
+  height: 48px;
+  background: rgba(26, 26, 29, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  box-shadow: var(--shadow-panel);
+  z-index: var(--z-controls);
+  transition: all var(--duration-base) ease;
+}
+
+.panel-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 217, 255, 0.2);
+}
+
+.panel-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .conversation-panel {
+    width: 280px;
+  }
+  
+  .text-input-bubble,
+  .llm-response-card {
+    min-width: 280px;
+    max-width: 90vw;
+  }
+  
+  .canvas-controls {
+    bottom: var(--space-md);
+    right: var(--space-md);
+  }
+}
+
+/* Selection and interaction states */
+.selectable {
+  transition: all var(--duration-base) ease;
+}
+
+.selectable:hover {
+  transform: scale(1.02);
+}
+
+.drag-feedback {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.8;
+}
+
+/* Loading states */
+.loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Utility classes */
+.hidden {
+  display: none !important;
+}
+
+.invisible {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.no-pointer-events {
+  pointer-events: none;
+}
